@@ -6,6 +6,7 @@ import (
 	"github.com/bitcapybara/geckod/service/client"
 	"github.com/bitcapybara/geckod/service/consumer"
 	"github.com/bitcapybara/geckod/service/producer"
+	"github.com/bitcapybara/geckod/service/subscription"
 	"github.com/bitcapybara/geckod/service/topic"
 )
 
@@ -13,6 +14,8 @@ type Broker interface {
 	Connect(*geckod.CommandConnect) (geckod.CommandConnected, error)
 	Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error)
 	Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
+	Unsubscribe(cmd *geckod.CommandUnsubscribe) error
+	Flow(cmd *geckod.CommandFlow) error
 }
 
 type Authenticator = func(username, passwd string, method geckod.ConnectAuthMethod) (bool, error)
@@ -89,4 +92,46 @@ func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscri
 	return &geckod.CommandSubscribeSuccess{
 		ConsumerId: info.Id,
 	}, nil
+}
+
+func (b *broker) Unsubscribe(cmd *geckod.CommandUnsubscribe) error {
+
+	sub, err := b.getSubscription(cmd.ConsumerId)
+	if err != nil {
+		return nil
+	}
+
+	return sub.Unsubscribe(cmd.ConsumerId)
+}
+
+func (b *broker) Flow(cmd *geckod.CommandFlow) error {
+
+	sub, err := b.getSubscription(cmd.ConsumerId)
+	if err != nil {
+		return nil
+	}
+
+	return sub.GetDispatcher().Flow(cmd.ConsumerId, cmd.MsgPermits)
+}
+
+func (b *broker) Ack(cmd *geckod.CommandAck) error {
+	return nil
+}
+
+func (b *broker) Send(cmd *geckod.CommandSend) error {
+	return nil
+}
+
+func (b *broker) getSubscription(consumerId uint64) (subscription.Subscription, error) {
+	info, err := b.consumers.Get(consumerId)
+	if err != nil {
+		return nil, err
+	}
+
+	topic, err := b.topics.Get(info.Topic)
+	if err != nil {
+		return nil, err
+	}
+
+	return topic.GetSubscription(info.SubName)
 }

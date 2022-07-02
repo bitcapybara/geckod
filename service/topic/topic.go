@@ -8,7 +8,7 @@ import (
 
 type TopicManager interface {
 	GetOrCreate(name string) (Topic, error)
-	Get(name string) (*Topic, error)
+	Get(name string) (Topic, error)
 	Del(name string) error
 }
 
