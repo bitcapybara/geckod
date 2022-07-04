@@ -11,15 +11,17 @@ import (
 )
 
 type Broker interface {
-	Connect(*geckod.CommandConnect) (geckod.CommandConnected, error)
-	Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error)
-	Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
-	Unsubscribe(cmd *geckod.CommandUnsubscribe) error
-	Flow(cmd *geckod.CommandFlow) error
-	Ack(cmd *geckod.CommandAck) error
+	Connect(*geckod.CommandConnect) (*geckod.CommandConnected, error)
+	Producer(*geckod.CommandProducer) (*geckod.CommandProducerSuccess, error)
+	Subscribe(*geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
+	Unsubscribe(*geckod.CommandUnsubscribe) error
+	Flow(*geckod.CommandFlow) error
+	Ack(*geckod.CommandAck) error
 }
 
 type Authenticator = func(username, passwd string, method geckod.ConnectAuthMethod) (bool, error)
+
+var _ Broker = (*broker)(nil)
 
 type broker struct {
 	clients   client.ClientManager
