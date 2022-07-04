@@ -16,6 +16,7 @@ type Broker interface {
 	Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
 	Unsubscribe(cmd *geckod.CommandUnsubscribe) error
 	Flow(cmd *geckod.CommandFlow) error
+	Ack(cmd *geckod.CommandAck) error
 }
 
 type Authenticator = func(username, passwd string, method geckod.ConnectAuthMethod) (bool, error)
@@ -115,7 +116,15 @@ func (b *broker) Flow(cmd *geckod.CommandFlow) error {
 }
 
 func (b *broker) Ack(cmd *geckod.CommandAck) error {
-	return nil
+	sub, err := b.getSubscription(cmd.ConsumerId)
+	if err != nil {
+		return err
+	}
+	if err := sub.GetType().MatchAckType(cmd.AckType); err != nil {
+		return err
+	}
+
+	return sub.Ack(geckod.AckType(cmd.AckType), cmd.MessageIds)
 }
 
 func (b *broker) Send(cmd *geckod.CommandSend) error {

@@ -22,5 +22,6 @@ func NewCommandError(code cmdpb.Error_Code, msg string) *Error {
 var (
 	ErrNotFound = errors.New("not found")
 
-	ErrAuthFailed = NewCommandError(cmdpb.Error_AuthenticateFail, "身份校验失败")
+	ErrAuthFailed     = NewCommandError(cmdpb.Error_AuthenticateFail, "身份校验失败")
+	ErrUnmatchAckType = NewCommandError(cmdpb.Error_UnmatchAckType, "cumulative ack on shared subscription")
 )

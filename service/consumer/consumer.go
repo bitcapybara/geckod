@@ -22,7 +22,6 @@ type ConsumerInfo struct {
 	ClientId string
 	Topic    string
 	SubName  string
-	SubType  string
 }
 
 type Consumer interface {

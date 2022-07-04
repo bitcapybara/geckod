@@ -1,13 +1,17 @@
 package subscription
 
-import "github.com/bitcapybara/geckod/service/consumer"
+import (
+	"github.com/bitcapybara/geckod"
+	"github.com/bitcapybara/geckod/service/consumer"
+)
 
 type Subscription interface {
 	GetName() string
+	GetType() geckod.SubScriptionType
 
 	GetDispatcher() Dispatcher
 
-	Ack(msgId uint64) error
+	Ack(ackType geckod.AckType, msgIds []uint64) error
 	Unsubscribe(consumerId uint64) error
 
 	Close() error
