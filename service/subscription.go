@@ -1,8 +1,7 @@
-package subscription
+package service
 
 import (
 	"github.com/bitcapybara/geckod"
-	"github.com/bitcapybara/geckod/service/consumer"
 )
 
 type Subscription interface {
@@ -18,7 +17,7 @@ type Subscription interface {
 }
 
 type Dispatcher interface {
-	AddConsumer(consumer.Consumer) error
+	AddConsumer(Consumer) error
 	DelConsumer(consumerId uint64) error
 
 	Flow(consumerId uint64, permits uint64) error

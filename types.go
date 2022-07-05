@@ -24,8 +24,8 @@ func (c SubScriptionType) asRaw() cmdpb.Subscribe_SubscriptionType {
 	return cmdpb.Subscribe_SubscriptionType(c)
 }
 
-func (c SubScriptionType) MatchAckType(ack cmdpb.Ack_AckType) error {
-	if ack == cmdpb.Ack_Cumulative && c.asRaw() == cmdpb.Subscribe_Shared {
+func (c SubScriptionType) MatchAckType(ack AckType) error {
+	if ack == AckType(cmdpb.Ack_Cumulative) && c == SubScriptionType(cmdpb.Subscribe_Shared) {
 		return errs.ErrUnmatchAckType
 	}
 	return nil

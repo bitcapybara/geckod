@@ -1,13 +1,11 @@
 package broker
 
 import (
+	"time"
+
 	"github.com/bitcapybara/geckod"
 	"github.com/bitcapybara/geckod/errs"
-	"github.com/bitcapybara/geckod/service/client"
-	"github.com/bitcapybara/geckod/service/consumer"
-	"github.com/bitcapybara/geckod/service/producer"
-	"github.com/bitcapybara/geckod/service/subscription"
-	"github.com/bitcapybara/geckod/service/topic"
+	"github.com/bitcapybara/geckod/service"
 )
 
 type Broker interface {
@@ -24,10 +22,11 @@ type Authenticator = func(username, passwd string, method geckod.ConnectAuthMeth
 var _ Broker = (*broker)(nil)
 
 type broker struct {
-	clients   client.ClientManager
-	producers producer.ProducerInfoManager
-	consumers consumer.ConsumerInfoManager
-	topics    topic.TopicManager
+	topics    service.Topics
+	clients   service.Clients
+	producers service.Producers
+	consumers service.Consumers
+	storage   service.Storage
 
 	authFn Authenticator
 }
@@ -77,7 +76,7 @@ func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscri
 		return nil, err
 	}
 
-	info, err := b.consumers.Add(&consumer.AddConsumerParams{
+	consumer, err := b.consumers.Add(&service.AddConsumerParams{
 		ClientId:     cmd.ClientId,
 		ConsumerName: cmd.ConsumerName,
 		TopicName:    cmd.Topic,
@@ -88,61 +87,64 @@ func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscri
 		return nil, err
 	}
 
-	if err := topic.Subscribe(info); err != nil {
+	if err := topic.Subscribe(consumer); err != nil {
 		return nil, err
 	}
 
 	return &geckod.CommandSubscribeSuccess{
-		ConsumerId: info.Id,
+		ConsumerId: consumer.Id,
 	}, nil
 }
 
 func (b *broker) Unsubscribe(cmd *geckod.CommandUnsubscribe) error {
 
-	sub, err := b.getSubscription(cmd.ConsumerId)
+	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
-		return nil
+		return err
 	}
 
-	return sub.Unsubscribe(cmd.ConsumerId)
+	return consumer.Unsubscribe()
 }
 
 func (b *broker) Flow(cmd *geckod.CommandFlow) error {
-
-	sub, err := b.getSubscription(cmd.ConsumerId)
+	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
 		return nil
 	}
 
-	return sub.GetDispatcher().Flow(cmd.ConsumerId, cmd.MsgPermits)
+	return consumer.Flow(cmd.MsgPermits)
 }
 
 func (b *broker) Ack(cmd *geckod.CommandAck) error {
-	sub, err := b.getSubscription(cmd.ConsumerId)
+	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
 		return err
 	}
-	if err := sub.GetType().MatchAckType(cmd.AckType); err != nil {
-		return err
-	}
 
-	return sub.Ack(geckod.AckType(cmd.AckType), cmd.MessageIds)
+	return consumer.Ack(geckod.AckType(cmd.AckType), cmd.MessageIds)
 }
 
 func (b *broker) Send(cmd *geckod.CommandSend) error {
-	return nil
-}
-
-func (b *broker) getSubscription(consumerId uint64) (subscription.Subscription, error) {
-	info, err := b.consumers.Get(consumerId)
+	producer, err := b.producers.Get(cmd.ProducerId)
 	if err != nil {
-		return nil, err
+		return err
+	}
+	// 存储
+	if _, err := b.storage.Add(&service.RawMessage{
+		TopicName:    cmd.TopicName,
+		ProducerName: producer.Name,
+		SequenceId:   cmd.SequenceId,
+		Timestamp:    time.UnixMilli(cmd.Timestamp),
+		Key:          cmd.Key,
+		Payload:      cmd.Payload,
+	}); err != nil {
+		return err
 	}
 
-	topic, err := b.topics.Get(info.Topic)
-	if err != nil {
-		return nil, err
+	// 更新元数据
+	if err := b.producers.UpdateSequenceId(producer.Id, cmd.SequenceId); err != nil {
+		return err
 	}
 
-	return topic.GetSubscription(info.SubName)
+	return producer.Send()
 }
