@@ -1,9 +1,9 @@
 package service
 
 type Topics interface {
-	GetOrCreate(name string) (Topic, error)
+	GetOrCreate(name string) Topic
 	Get(name string) (Topic, error)
-	Del(name string) error
+	Del(name string)
 }
 
 type Topic interface {
@@ -12,7 +12,8 @@ type Topic interface {
 	// 处理客户端生产者发送的数据
 	Publish() error
 	// 处理消费者订阅
-	Subscribe(*Consumer) error
+	// 生成 consumer，添加到 subscription，返回 consumer
+	Subscribe() (*Consumer, error)
 
 	// 生产者管理
 	AddProducer(*Producer) error

@@ -52,12 +52,10 @@ func (b *broker) Connect(cmd *geckod.CommandConnect) (*geckod.CommandConnected, 
 }
 
 func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error) {
-	topic, err := b.topics.GetOrCreate(cmd.Topic)
-	if err != nil {
-		return nil, err
-	}
+	topic := b.topics.GetOrCreate(cmd.Topic)
 
-	producer, err := b.producers.Create(&service.ProducerConfig{
+	// 生成 producer
+	producer, err := b.producers.Create(&service.AddProducerParams{
 		ProducerName: cmd.ProducerName,
 		AccessMode:   geckod.ProducerAccessMode(cmd.AccessMode),
 		Topic:        topic,
@@ -66,6 +64,7 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 		return nil, err
 	}
 
+	// 添加到 topic
 	if err := topic.AddProducer(producer); err != nil {
 		return nil, err
 	}
@@ -76,23 +75,14 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 }
 
 func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error) {
-	topic, err := b.topics.GetOrCreate(cmd.Topic)
+	topic := b.topics.GetOrCreate(cmd.Topic)
+
+	consumer, err := topic.Subscribe()
 	if err != nil {
 		return nil, err
 	}
 
-	consumer, err := b.consumers.GetOrCreate(&service.AddConsumerParams{
-		ClientId:     cmd.ClientId,
-		ConsumerName: cmd.ConsumerName,
-		TopicName:    cmd.Topic,
-		SubName:      cmd.SubName,
-		SubType:      geckod.SubScriptionType(cmd.SubType),
-	})
-	if err != nil {
-		return nil, err
-	}
-
-	if err := topic.Subscribe(consumer); err != nil {
+	if err := b.consumers.Add(consumer); err != nil {
 		return nil, err
 	}
 

@@ -7,12 +7,12 @@ import (
 )
 
 type Producers interface {
-	Create(cfg *ProducerConfig) (*Producer, error)
+	Create(cfg *AddProducerParams) (*Producer, error)
 	Get(id uint64) (*Producer, error)
 	Del(id uint64)
 }
 
-type ProducerConfig struct {
+type AddProducerParams struct {
 	Id           uint64
 	clientId     uint64
 	ProducerName string
@@ -30,7 +30,7 @@ type Producer struct {
 	topic Topic
 }
 
-func NewProducer(id uint64, cfg *ProducerConfig) *Producer {
+func NewProducer(id uint64, cfg *AddProducerParams) *Producer {
 	return &Producer{
 		Id:         cfg.Id,
 		Name:       cfg.ProducerName,

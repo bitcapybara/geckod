@@ -5,24 +5,34 @@ import "github.com/bitcapybara/geckod"
 type Consumers interface {
 	GetOrCreate(*AddConsumerParams) (*Consumer, error)
 	Get(id uint64) (*Consumer, error)
-	Del(id uint64) error
+	Del(id uint64)
+	Add(*Consumer) error
 }
 
 type AddConsumerParams struct {
 	ClientId     uint64
 	ConsumerName string
 	TopicName    string
-	SubName      string
-	SubType      geckod.SubScriptionType
+	Subscription Subscription
 }
 
 type Consumer struct {
 	Id        uint64
 	Name      string
-	ClientId  string
+	ClientId  uint64
 	TopicName string
 
 	sub Subscription
+}
+
+func NewConsumer(id uint64, params *AddConsumerParams) *Consumer {
+	return &Consumer{
+		Id:        id,
+		Name:      params.ConsumerName,
+		ClientId:  params.ClientId,
+		TopicName: params.TopicName,
+		sub:       params.Subscription,
+	}
 }
 
 func (c *Consumer) Unsubscribe() error {

@@ -2,10 +2,10 @@ module github.com/bitcapybara/geckod
 
 go 1.18
 
-replace github.com/bitcapybara/geckod-proto => ../geckod-proto
+// replace github.com/bitcapybara/geckod-proto => ../geckod-proto
 
 require (
-	github.com/bitcapybara/geckod-proto v0.0.0-20220704151304-47e7dad1832b
+	github.com/bitcapybara/geckod-proto v0.0.0-20220705124628-3f56ba0ba697
 	go.uber.org/atomic v1.9.0
 )
 

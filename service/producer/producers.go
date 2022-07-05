@@ -18,7 +18,7 @@ type producers struct {
 	producersByName map[string]struct{}
 }
 
-func (p *producers) Create(cfg *service.ProducerConfig) (*service.Producer, error) {
+func (p *producers) Create(cfg *service.AddProducerParams) (*service.Producer, error) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
