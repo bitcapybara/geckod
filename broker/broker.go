@@ -57,17 +57,21 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 		return nil, err
 	}
 
-	info, err := b.producers.GetOrCreate(cmd.ClientId, cmd.ProducerName, geckod.ProducerAccessMode(cmd.AccessMode))
+	producer, err := b.producers.Create(&service.ProducerConfig{
+		ProducerName: cmd.ProducerName,
+		AccessMode:   geckod.ProducerAccessMode(cmd.AccessMode),
+		Topic:        topic,
+	})
 	if err != nil {
 		return nil, err
 	}
 
-	if err := topic.AddProducer(info); err != nil {
+	if err := topic.AddProducer(producer); err != nil {
 		return nil, err
 	}
 
 	return &geckod.CommandProducerSuccess{
-		ProducerId: info.Id,
+		ProducerId: producer.Id,
 	}, nil
 }
 
@@ -77,7 +81,7 @@ func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscri
 		return nil, err
 	}
 
-	consumer, err := b.consumers.Add(&service.AddConsumerParams{
+	consumer, err := b.consumers.GetOrCreate(&service.AddConsumerParams{
 		ClientId:     cmd.ClientId,
 		ConsumerName: cmd.ConsumerName,
 		TopicName:    cmd.Topic,

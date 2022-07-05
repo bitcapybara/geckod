@@ -7,9 +7,17 @@ import (
 )
 
 type Producers interface {
-	GetOrCreate(client_id uint64, name string, access_mode geckod.ProducerAccessMode) (*Producer, error)
+	Create(cfg *ProducerConfig) (*Producer, error)
 	Get(id uint64) (*Producer, error)
-	Del(id uint64) (*Producer, error)
+	Del(id uint64)
+}
+
+type ProducerConfig struct {
+	Id           uint64
+	clientId     uint64
+	ProducerName string
+	AccessMode   geckod.ProducerAccessMode
+	Topic        Topic
 }
 
 type Producer struct {
@@ -20,6 +28,15 @@ type Producer struct {
 	sequenceId uint64
 
 	topic Topic
+}
+
+func NewProducer(id uint64, cfg *ProducerConfig) *Producer {
+	return &Producer{
+		Id:         cfg.Id,
+		Name:       cfg.ProducerName,
+		sequenceId: 0,
+		topic:      cfg.Topic,
+	}
 }
 
 func (p *Producer) GetTopic() Topic {

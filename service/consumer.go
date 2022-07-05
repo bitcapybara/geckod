@@ -3,7 +3,7 @@ package service
 import "github.com/bitcapybara/geckod"
 
 type Consumers interface {
-	Add(*AddConsumerParams) (*Consumer, error)
+	GetOrCreate(*AddConsumerParams) (*Consumer, error)
 	Get(id uint64) (*Consumer, error)
 	Del(id uint64) error
 }
