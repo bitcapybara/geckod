@@ -142,10 +142,8 @@ func (b *broker) Send(cmd *geckod.CommandSend) error {
 		return err
 	}
 
-	// 更新元数据
-	if err := b.producers.UpdateSequenceId(producer.Id, cmd.SequenceId); err != nil {
-		return err
-	}
+	// 更新最新消息序列号
+	producer.SetSequenceId(cmd.SequenceId)
 
 	return producer.Send()
 }
