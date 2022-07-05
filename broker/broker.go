@@ -15,6 +15,7 @@ type Broker interface {
 	Unsubscribe(*geckod.CommandUnsubscribe) error
 	Flow(*geckod.CommandFlow) error
 	Ack(*geckod.CommandAck) error
+	Send(cmd *geckod.CommandSend) error
 }
 
 type Authenticator = func(username, passwd string, method geckod.ConnectAuthMethod) (bool, error)
