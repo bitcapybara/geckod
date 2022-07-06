@@ -20,9 +20,6 @@ type Topic interface {
 	GetProducer(producer_id uint64) (*Producer, error)
 	DelProducer(producer_id uint64) error
 
-	// 订阅
-	GetSubscription(subName string) (Subscription, error)
-
 	// 释放资源
 	Close() error
 }

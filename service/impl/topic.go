@@ -114,11 +114,6 @@ func (t *topic) DelProducer(producer_id uint64) error {
 	return nil
 }
 
-// 订阅
-func (t *topic) GetSubscription(subName string) (service.Subscription, error) {
-	panic("not implemented") // TODO: Implement
-}
-
 // 释放资源
 func (t *topic) Close() error {
 	panic("not implemented") // TODO: Implement
