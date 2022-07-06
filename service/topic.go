@@ -13,11 +13,11 @@ type Topic interface {
 	Publish() error
 	// 处理消费者订阅
 	// 生成 consumer，添加到 subscription，返回 consumer
-	Subscribe() (*Consumer, error)
+	Subscribe(*SubscriptionOption) (*Consumer, error)
 
 	// 生产者管理
 	AddProducer(*Producer) error
-	GetProducer(producer_id uint64) Producer
+	GetProducer(producer_id uint64) (*Producer, error)
 	DelProducer(producer_id uint64) error
 
 	// 订阅
@@ -25,4 +25,11 @@ type Topic interface {
 
 	// 释放资源
 	Close() error
+}
+
+type SubscriptionOption struct {
+	SubName      string
+	ClientId     uint64
+	ConsumerName string
+	TopicName    string
 }

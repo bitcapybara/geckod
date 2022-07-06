@@ -1,4 +1,4 @@
-package topic
+package impl
 
 import (
 	"sync"

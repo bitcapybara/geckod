@@ -21,8 +21,9 @@ type AddProducerParams struct {
 }
 
 type Producer struct {
-	Id   uint64
-	Name string
+	Id         uint64
+	Name       string
+	AccessMode geckod.ProducerAccessMode
 
 	mu         sync.Mutex
 	sequenceId uint64
@@ -34,13 +35,14 @@ func NewProducer(id uint64, cfg *AddProducerParams) *Producer {
 	return &Producer{
 		Id:         cfg.Id,
 		Name:       cfg.ProducerName,
+		AccessMode: cfg.AccessMode,
 		sequenceId: 0,
 		topic:      cfg.Topic,
 	}
 }
 
 func (p *Producer) GetTopic() Topic {
-	return nil
+	return p.topic
 }
 
 func (p *Producer) Send() error {

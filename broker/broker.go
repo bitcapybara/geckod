@@ -77,7 +77,12 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error) {
 	topic := b.topics.GetOrCreate(cmd.Topic)
 
-	consumer, err := topic.Subscribe()
+	consumer, err := topic.Subscribe(&service.SubscriptionOption{
+		SubName:      cmd.SubName,
+		ClientId:     cmd.ClientId,
+		ConsumerName: cmd.ConsumerName,
+		TopicName:    cmd.Topic,
+	})
 	if err != nil {
 		return nil, err
 	}

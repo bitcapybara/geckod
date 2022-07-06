@@ -40,7 +40,7 @@ func (c *Consumer) Unsubscribe() error {
 }
 
 func (c *Consumer) Flow(permits uint64) error {
-	return c.sub.GetDispatcher().Flow(c.Id, permits)
+	return c.sub.Flow(c.Id, permits)
 }
 
 func (c *Consumer) Ack(ackType geckod.AckType, msgIds []uint64) error {
