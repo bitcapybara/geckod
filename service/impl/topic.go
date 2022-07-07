@@ -16,6 +16,7 @@ type topic struct {
 	name string
 
 	consumers service.Consumers
+	storage   service.Storage
 
 	mu                   sync.Mutex
 	producers            map[uint64]*service.Producer
@@ -33,8 +34,25 @@ func (t *topic) GetName() string {
 }
 
 // 处理客户端生产者发送的数据
-func (t *topic) Publish() error {
-	panic("not implemented") // TODO: Implement
+func (t *topic) Publish(msg *service.RawMessage) error {
+	// 存储
+	if _, err := t.storage.Add(msg); err != nil {
+		return err
+	}
+	//
+	for _, subscripton := range t.subscriptions {
+		dispatcher, err := subscripton.GetDispatcher()
+		if err != nil {
+			if err == errs.ErrNotFound {
+				continue
+			}
+			return err
+		}
+		if err := dispatcher.SendMessages(); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // 处理消费者订阅
@@ -49,8 +67,8 @@ func (t *topic) Subscribe(option *service.SubscriptionOption) (*service.Consumer
 
 	consumer, err := t.consumers.GetOrCreate(&service.AddConsumerParams{
 		ClientId:     option.ClientId,
-		ConsumerName: "",
-		TopicName:    "",
+		ConsumerName: option.ConsumerName,
+		TopicName:    option.TopicName,
 		Subscription: subscription,
 	})
 	if err != nil {

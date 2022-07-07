@@ -27,4 +27,5 @@ var (
 	ErrProducerAlreadyExists     = NewCommandError(cmdpb.Error_ProducerAlreadyExists, "生产者已存在")
 	ErrConsumerAlreadyExists     = NewCommandError(cmdpb.Error_ConsumerAlreadyExists, "消费者已存在")
 	ErrProducerExclusiveConflict = errors.New("")
+	ErrDuplicatedSequenceId      = errors.New("")
 )

@@ -129,20 +129,17 @@ func (b *broker) Send(cmd *geckod.CommandSend) error {
 	if err != nil {
 		return err
 	}
-	// 存储
-	if _, err := b.storage.Add(&service.RawMessage{
+	seqId := producer.GetSequenceId()
+	if cmd.SequenceId >= seqId {
+		return errs.ErrDuplicatedSequenceId
+	}
+
+	return producer.Send(&service.RawMessage{
 		TopicName:    cmd.TopicName,
 		ProducerName: producer.Name,
 		SequenceId:   cmd.SequenceId,
 		Timestamp:    time.UnixMilli(cmd.Timestamp),
 		Key:          cmd.Key,
 		Payload:      cmd.Payload,
-	}); err != nil {
-		return err
-	}
-
-	// 更新最新消息序列号
-	producer.SetSequenceId(cmd.SequenceId)
-
-	return producer.Send()
+	})
 }

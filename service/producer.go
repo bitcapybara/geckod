@@ -45,8 +45,15 @@ func (p *Producer) GetTopic() Topic {
 	return p.topic
 }
 
-func (p *Producer) Send() error {
-	return p.topic.Publish()
+func (p *Producer) Send(msg *RawMessage) error {
+	// topic
+	if err := p.topic.Publish(msg); err != nil {
+		return err
+	}
+	// 更新最新消息序列号
+	p.SetSequenceId(msg.SequenceId)
+
+	return nil
 }
 
 func (p *Producer) SetSequenceId(seqId uint64) {
@@ -54,4 +61,11 @@ func (p *Producer) SetSequenceId(seqId uint64) {
 	defer p.mu.Unlock()
 
 	p.sequenceId = seqId
+}
+
+func (p *Producer) GetSequenceId() uint64 {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	return p.sequenceId
 }

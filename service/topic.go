@@ -10,7 +10,7 @@ type Topic interface {
 	GetName() string
 
 	// 处理客户端生产者发送的数据
-	Publish() error
+	Publish(*RawMessage) error
 	// 处理消费者订阅
 	// 生成 consumer，添加到 subscription，返回 consumer
 	Subscribe(*SubscriptionOption) (*Consumer, error)

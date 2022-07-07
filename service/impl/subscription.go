@@ -41,6 +41,10 @@ func (s *subscription) Unsubscribe(consumerId uint64) error {
 	panic("not implemented") // TODO: Implement
 }
 
+func (s *subscription) GetDispatcher() (service.Dispatcher, error) {
+	return nil, nil
+}
+
 func (s *subscription) Close() error {
 	panic("not implemented") // TODO: Implement
 }
