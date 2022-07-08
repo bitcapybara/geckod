@@ -49,3 +49,7 @@ func (c *Consumer) Ack(ackType geckod.AckType, msgIds []uint64) error {
 	}
 	return c.sub.Ack(ackType, msgIds)
 }
+
+func (c *Consumer) Close() error {
+	return c.sub.DelConsumer(c.Id)
+}
