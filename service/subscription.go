@@ -8,7 +8,7 @@ type Subscription interface {
 	GetName() string
 	GetType() geckod.SubScriptionType
 
-	AddConsumer(Consumer) error
+	AddConsumer(*Consumer) error
 	DelConsumer(consumerId uint64) error
 
 	Flow(consumerId uint64, permits uint64) error
@@ -23,8 +23,9 @@ type Subscription interface {
 }
 
 type Dispatcher interface {
-	AddConsumer(Consumer) error
+	AddConsumer(*Consumer) error
 	DelConsumer(consumerId uint64) error
+	GetConsumers() []*Consumer
 
 	Flow(consumerId uint64, permits uint64) error
 

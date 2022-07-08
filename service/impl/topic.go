@@ -75,11 +75,19 @@ func (t *topic) Subscribe(option *service.SubscriptionOption) (*service.Consumer
 		return nil, err
 	}
 
-	if err := subscription.AddConsumer(*consumer); err != nil {
+	if err := subscription.AddConsumer(consumer); err != nil {
 		return nil, err
 	}
 
 	return consumer, nil
+}
+
+func (t *topic) RemoveSubscription(subName string) error {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
+	delete(t.subscriptions, subName)
+	return nil
 }
 
 func (t *topic) getOrCreateSubscription(name string) service.Subscription {

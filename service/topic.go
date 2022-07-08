@@ -14,6 +14,7 @@ type Topic interface {
 	// 处理消费者订阅
 	// 生成 consumer，添加到 subscription，返回 consumer
 	Subscribe(*SubscriptionOption) (*Consumer, error)
+	RemoveSubscription(subName string) error
 
 	// 生产者管理
 	AddProducer(*Producer) error
