@@ -35,11 +35,25 @@ func (c *consumers) GetOrCreate(params *service.AddConsumerParams) (*service.Con
 }
 
 func (c *consumers) Get(id uint64) (*service.Consumer, error) {
-	panic("not implemented") // TODO: Implement
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if consumer, ok := c.consumers[id]; ok {
+		return consumer, nil
+	}
+
+	return nil, errs.ErrNotFound
 }
 
 func (c *consumers) Del(id uint64) {
-	panic("not implemented") // TODO: Implement
+	c.mu.Lock()
+	defer c.mu.Unlock()
+
+	if consumer, ok := c.consumers[id]; ok {
+		delete(c.consumersByName, consumer.Name)
+	}
+
+	delete(c.consumers, id)
 }
 
 func (c *consumers) Add(consumer *service.Consumer) error {
