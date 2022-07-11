@@ -62,7 +62,7 @@ func (s *subscription) DelConsumer(consumerId uint64) error {
 	}
 
 	if err := dispatcher.DelConsumer(consumerId); err != nil {
-		return nil
+		return err
 	}
 
 	if len(dispatcher.GetConsumers()) != 0 {
@@ -71,7 +71,7 @@ func (s *subscription) DelConsumer(consumerId uint64) error {
 
 	// 清理资源
 	if err := dispatcher.Close(); err != nil {
-		return nil
+		return err
 	}
 
 	return s.topic.RemoveSubscription(s.name)
