@@ -82,6 +82,10 @@ func (t *topic) Subscribe(option *service.SubscriptionOption) (*service.Consumer
 	return consumer, nil
 }
 
+func (t *topic) Unsubscribe(subName string) error {
+	return nil
+}
+
 func (t *topic) RemoveSubscription(subName string) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()

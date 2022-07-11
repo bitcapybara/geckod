@@ -1,10 +1,16 @@
 package impl
 
-import "github.com/bitcapybara/geckod/service"
+import (
+	"sync"
+
+	"github.com/bitcapybara/geckod/service"
+)
 
 var _ service.Dispatcher = (*dispatcher)(nil)
 
 type dispatcher struct {
+	mu        sync.Mutex
+	consumers map[uint64]*service.Consumer
 }
 
 func newDispatcher() *dispatcher {
@@ -25,6 +31,12 @@ func (d *dispatcher) GetConsumers() []*service.Consumer {
 
 func (d *dispatcher) Flow(consumerId uint64, permits uint64) error {
 	panic("not implemented") // TODO: Implement
+}
+
+func (d *dispatcher) CanUnsubscribe(consumerId uint64) bool {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return len(d.consumers) == 1 && d.consumers[consumerId] != nil
 }
 
 func (d *dispatcher) SendMessages() error {

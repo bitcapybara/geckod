@@ -36,7 +36,7 @@ func NewConsumer(id uint64, params *AddConsumerParams) *Consumer {
 }
 
 func (c *Consumer) Unsubscribe() error {
-	return c.sub.Unsubscribe(c.Id)
+	return c.sub.Unsubscribe(c)
 }
 
 func (c *Consumer) Flow(permits uint64) error {

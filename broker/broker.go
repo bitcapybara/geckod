@@ -103,7 +103,12 @@ func (b *broker) Unsubscribe(cmd *geckod.CommandUnsubscribe) error {
 		return err
 	}
 
-	return consumer.Unsubscribe()
+	if err := consumer.Unsubscribe(); err != nil {
+		return err
+	}
+
+	b.consumers.Del(cmd.ConsumerId)
+	return nil
 }
 
 func (b *broker) Flow(cmd *geckod.CommandFlow) error {
