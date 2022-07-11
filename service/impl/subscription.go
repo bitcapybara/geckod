@@ -116,7 +116,13 @@ func (s *subscription) Unsubscribe(consumer *service.Consumer) error {
 }
 
 func (s *subscription) GetDispatcher() (service.Dispatcher, error) {
-	return nil, nil
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	if s.dispatcher != nil {
+		return s.dispatcher, nil
+	}
+	return nil, errs.ErrNotFound
 }
 
 func (s *subscription) Close() error {
