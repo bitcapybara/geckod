@@ -1,6 +1,11 @@
 package service
 
-import "github.com/bitcapybara/geckod"
+import (
+	"sync"
+
+	"github.com/bitcapybara/geckod"
+	"go.uber.org/atomic"
+)
 
 type Consumers interface {
 	GetOrCreate(*AddConsumerParams) (*Consumer, error)
@@ -22,7 +27,13 @@ type Consumer struct {
 	ClientId  uint64
 	TopicName string
 
-	sub Subscription
+	sub    Subscription
+	sender geckod.ConsumerMessageSender
+
+	permits atomic.Uint64
+
+	mu          sync.Mutex
+	pendingAcks []uint64
 }
 
 func NewConsumer(id uint64, params *AddConsumerParams) *Consumer {
@@ -40,6 +51,7 @@ func (c *Consumer) Unsubscribe() error {
 }
 
 func (c *Consumer) Flow(permits uint64) error {
+	defer c.permits.Add(permits)
 	return c.sub.Flow(c.Id, permits)
 }
 
@@ -48,6 +60,16 @@ func (c *Consumer) Ack(ackType geckod.AckType, msgIds []uint64) error {
 		return err
 	}
 	return c.sub.Ack(ackType, msgIds)
+}
+
+// 把消息发送给消费者
+func (c *Consumer) SendMessages(msgs []*geckod.RawMessage) error {
+	defer c.permits.Add(-uint64(len(msgs)))
+	return nil
+}
+
+func (c *Consumer) Permits() uint64 {
+	return c.permits.Load()
 }
 
 func (c *Consumer) Close() error {

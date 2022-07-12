@@ -34,7 +34,7 @@ func (t *topic) GetName() string {
 }
 
 // 处理客户端生产者发送的数据
-func (t *topic) Publish(msg *service.RawMessage) error {
+func (t *topic) Publish(msg *geckod.RawMessage) error {
 	// 存储
 	if _, err := t.storage.Add(msg); err != nil {
 		return err

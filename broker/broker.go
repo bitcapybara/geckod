@@ -139,7 +139,7 @@ func (b *broker) Send(cmd *geckod.CommandSend) error {
 		return errs.ErrDuplicatedSequenceId
 	}
 
-	return producer.Send(&service.RawMessage{
+	return producer.Send(&geckod.RawMessage{
 		TopicName:    cmd.TopicName,
 		ProducerName: producer.Name,
 		SequenceId:   cmd.SequenceId,

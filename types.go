@@ -1,6 +1,8 @@
 package geckod
 
 import (
+	"time"
+
 	cmdpb "github.com/bitcapybara/geckod-proto/gen/go/proto/command"
 	"github.com/bitcapybara/geckod/errs"
 )
@@ -29,4 +31,18 @@ func (c SubScriptionType) MatchAckType(ack AckType) error {
 		return errs.ErrUnmatchAckType
 	}
 	return nil
+}
+
+type ConsumerMessageSender interface {
+	Send([]*RawMessage) error
+}
+
+type RawMessage struct {
+	Id           uint64
+	TopicName    string
+	ProducerName string
+	SequenceId   uint64
+	Timestamp    time.Time
+	Key          string
+	Payload      []byte
 }

@@ -39,4 +39,6 @@ type Cursor interface {
 	MarkDelete(msgId uint64) error
 	// 删除所有指定 id 的记录
 	Delete(msgIds []uint64) error
+	// 根据cursor的情况，获取可发送的消息
+	GetMoreMessages(num uint64) ([]*geckod.RawMessage, error)
 }

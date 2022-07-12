@@ -45,7 +45,7 @@ func (p *Producer) GetTopic() Topic {
 	return p.topic
 }
 
-func (p *Producer) Send(msg *RawMessage) error {
+func (p *Producer) Send(msg *geckod.RawMessage) error {
 	// topic
 	if err := p.topic.Publish(msg); err != nil {
 		return err
