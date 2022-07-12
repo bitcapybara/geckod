@@ -6,27 +6,19 @@
 * 与网络层/存储层解耦，以接口形式集成
 * 当前版本只实现了消息队列的核心功能，如果需要实现完整的消息队列，需要自行实现网络/存储层
 
-### 集成方需要实现的接口
+### 主要接口介绍
 
-* 发送消息给消费者
+#### geckod.ConsumerMessageSender
 
-```golang
-type ConsumerMessageSender interface {
-	Send([]*geckod.RawMessage) error
-}
-```
-* 消息存储接口(可选，默认内存存储)
+> 发送消息给消费者接口，geckod 内部调用此接口将消息发送给消费者
 
-```golang
-type Storage interface {
-	Add(*geckod.RawMessage) (uint64, error)
-	Get(id uint64) (*geckod.RawMessage, error)
-	GetRange(from uint64, to uint64) ([]*geckod.RawMessage, error)
-	GetBatch(ids []uint64) ([]*geckod.RawMessage, error)
-	GetMore(limit uint64) ([]*geckod.RawMessage, error)
-	DelUntil(id uint64) error
-}
-```
+#### service.Storage
+
+>  消息存储接口(可选，默认内存存储)
+
+#### broker.Broker
+
+> 集成方通过调用此接口的方法来驱动消息队列各项功能
 
 ### TODO
 - [ ] 单元测试
