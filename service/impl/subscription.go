@@ -91,13 +91,13 @@ func (s *subscription) Ack(ctx context.Context, ackType geckod.AckType, msgIds [
 		if len(msgIds) != 1 {
 			return errors.New("Invalid cumulative ack received with multiple message ids")
 		}
-		if err := s.cursor.MarkDelete(msgIds[0]); err != nil {
+		if err := s.cursor.MarkDelete(ctx, msgIds[0]); err != nil {
 			return err
 		}
 		return nil
 	}
 
-	return s.cursor.Delete(msgIds)
+	return s.cursor.Delete(ctx, msgIds)
 }
 
 func (s *subscription) Unsubscribe(ctx context.Context, consumer *service.Consumer) error {

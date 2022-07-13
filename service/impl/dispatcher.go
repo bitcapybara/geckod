@@ -90,7 +90,7 @@ func (d *dispatcher) sendMessagesToConsumers(ctx context.Context) error {
 		// 要发送给消费者的消息数量
 		permits := consumer.Permits()
 		// 获取要发送的消息
-		msgs, err := d.cursor.GetMoreMessages(permits)
+		msgs, err := d.cursor.GetMoreMessages(ctx, permits)
 		if err != nil {
 			return err
 		}

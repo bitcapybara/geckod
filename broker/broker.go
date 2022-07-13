@@ -28,7 +28,6 @@ type broker struct {
 	clients   service.Clients
 	producers service.Producers
 	consumers service.Consumers
-	storage   service.Storage
 
 	authFn Authenticator
 }

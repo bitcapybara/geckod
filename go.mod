@@ -6,6 +6,7 @@ go 1.18
 
 require (
 	github.com/bitcapybara/geckod-proto v0.0.0-20220705124628-3f56ba0ba697
+	github.com/bits-and-blooms/bitset v1.2.2
 	go.uber.org/atomic v1.9.0
 )
 

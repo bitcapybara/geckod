@@ -38,9 +38,9 @@ type Dispatcher interface {
 
 type Cursor interface {
 	// id之前的所有记录都删除
-	MarkDelete(msgId uint64) error
+	MarkDelete(ctx context.Context, msgId uint64) error
 	// 删除所有指定 id 的记录
-	Delete(msgIds []uint64) error
+	Delete(ctx context.Context, msgIds []uint64) error
 	// 根据cursor的情况，获取可发送的消息
-	GetMoreMessages(num uint64) ([]*geckod.RawMessage, error)
+	GetMoreMessages(ctx context.Context, num uint64) ([]*geckod.RawMessage, error)
 }
