@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/bitcapybara/geckod"
 )
 
@@ -8,30 +10,30 @@ type Subscription interface {
 	GetName() string
 	GetType() geckod.SubScriptionType
 
-	AddConsumer(*Consumer) error
-	DelConsumer(consumerId uint64) error
+	AddConsumer(ctx context.Context, _ *Consumer) error
+	DelConsumer(ctx context.Context, consumerId uint64) error
 
-	Flow(consumerId uint64, permits uint64) error
+	Flow(ctx context.Context, consumerId uint64, permits uint64) error
 
-	Ack(ackType geckod.AckType, msgIds []uint64) error
-	Unsubscribe(consumer *Consumer) error
+	Ack(ctx context.Context, ackType geckod.AckType, msgIds []uint64) error
+	Unsubscribe(ctx context.Context, consumer *Consumer) error
 
 	// 有消费者，才会生成 dispatcher，否则返回 NotFound
 	GetDispatcher() (Dispatcher, error)
 
-	Close() error
+	Close(ctx context.Context) error
 }
 
 type Dispatcher interface {
-	AddConsumer(*Consumer) error
-	DelConsumer(consumerId uint64) error
-	GetConsumers() []*Consumer
+	AddConsumer(ctx context.Context, _ *Consumer) error
+	DelConsumer(ctx context.Context, consumerId uint64) error
+	GetConsumers(ctx context.Context) []*Consumer
 
-	Flow(consumerId uint64, permits uint64) error
-	CanUnsubscribe(consumerId uint64) bool
-	SendMessages() error
+	Flow(ctx context.Context, consumerId uint64, permits uint64) error
+	CanUnsubscribe(ctx context.Context, consumerId uint64) bool
+	SendMessages(ctx context.Context) error
 
-	Close() error
+	Close(ctx context.Context) error
 }
 
 type Cursor interface {

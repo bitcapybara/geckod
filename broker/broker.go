@@ -1,6 +1,7 @@
 package broker
 
 import (
+	"context"
 	"time"
 
 	"github.com/bitcapybara/geckod"
@@ -9,13 +10,13 @@ import (
 )
 
 type Broker interface {
-	Connect(*geckod.CommandConnect) (*geckod.CommandConnected, error)
-	Producer(*geckod.CommandProducer) (*geckod.CommandProducerSuccess, error)
-	Subscribe(*geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
-	Unsubscribe(*geckod.CommandUnsubscribe) error
-	Flow(*geckod.CommandFlow) error
-	Ack(*geckod.CommandAck) error
-	Send(cmd *geckod.CommandSend) error
+	Connect(ctx context.Context, _ *geckod.CommandConnect) (*geckod.CommandConnected, error)
+	Producer(ctx context.Context, _ *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error)
+	Subscribe(ctx context.Context, _ *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error)
+	Unsubscribe(ctx context.Context, _ *geckod.CommandUnsubscribe) error
+	Flow(ctx context.Context, _ *geckod.CommandFlow) error
+	Ack(ctx context.Context, _ *geckod.CommandAck) error
+	Send(ctx context.Context, _ *geckod.CommandSend) error
 }
 
 type Authenticator = func(username, passwd string, method geckod.ConnectAuthMethod) (bool, error)
@@ -32,7 +33,7 @@ type broker struct {
 	authFn Authenticator
 }
 
-func (b *broker) Connect(cmd *geckod.CommandConnect) (*geckod.CommandConnected, error) {
+func (b *broker) Connect(ctx context.Context, cmd *geckod.CommandConnect) (*geckod.CommandConnected, error) {
 	ok, err := b.authFn(cmd.Username, cmd.Password, geckod.ConnectAuthMethod(cmd.AuthMethod))
 	if !ok {
 		return nil, errs.ErrAuthFailed
@@ -51,7 +52,7 @@ func (b *broker) Connect(cmd *geckod.CommandConnect) (*geckod.CommandConnected, 
 	}, nil
 }
 
-func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error) {
+func (b *broker) Producer(ctx context.Context, cmd *geckod.CommandProducer) (*geckod.CommandProducerSuccess, error) {
 	topic := b.topics.GetOrCreate(cmd.Topic)
 
 	// 生成 producer
@@ -65,7 +66,7 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 	}
 
 	// 添加到 topic
-	if err := topic.AddProducer(producer); err != nil {
+	if err := topic.AddProducer(ctx, producer); err != nil {
 		return nil, err
 	}
 
@@ -74,10 +75,10 @@ func (b *broker) Producer(cmd *geckod.CommandProducer) (*geckod.CommandProducerS
 	}, nil
 }
 
-func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error) {
+func (b *broker) Subscribe(ctx context.Context, cmd *geckod.CommandSubscribe) (*geckod.CommandSubscribeSuccess, error) {
 	topic := b.topics.GetOrCreate(cmd.Topic)
 
-	consumer, err := topic.Subscribe(&service.SubscriptionOption{
+	consumer, err := topic.Subscribe(ctx, &service.SubscriptionOption{
 		SubName:      cmd.SubName,
 		ClientId:     cmd.ClientId,
 		ConsumerName: cmd.ConsumerName,
@@ -96,14 +97,14 @@ func (b *broker) Subscribe(cmd *geckod.CommandSubscribe) (*geckod.CommandSubscri
 	}, nil
 }
 
-func (b *broker) Unsubscribe(cmd *geckod.CommandUnsubscribe) error {
+func (b *broker) Unsubscribe(ctx context.Context, cmd *geckod.CommandUnsubscribe) error {
 
 	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
 		return err
 	}
 
-	if err := consumer.Unsubscribe(); err != nil {
+	if err := consumer.Unsubscribe(ctx); err != nil {
 		return err
 	}
 
@@ -111,25 +112,25 @@ func (b *broker) Unsubscribe(cmd *geckod.CommandUnsubscribe) error {
 	return nil
 }
 
-func (b *broker) Flow(cmd *geckod.CommandFlow) error {
+func (b *broker) Flow(ctx context.Context, cmd *geckod.CommandFlow) error {
 	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
 		return nil
 	}
 
-	return consumer.Flow(cmd.MsgPermits)
+	return consumer.Flow(ctx, cmd.MsgPermits)
 }
 
-func (b *broker) Ack(cmd *geckod.CommandAck) error {
+func (b *broker) Ack(ctx context.Context, cmd *geckod.CommandAck) error {
 	consumer, err := b.consumers.Get(cmd.ConsumerId)
 	if err != nil {
 		return err
 	}
 
-	return consumer.Ack(geckod.AckType(cmd.AckType), cmd.MessageIds)
+	return consumer.Ack(ctx, geckod.AckType(cmd.AckType), cmd.MessageIds)
 }
 
-func (b *broker) Send(cmd *geckod.CommandSend) error {
+func (b *broker) Send(ctx context.Context, cmd *geckod.CommandSend) error {
 	producer, err := b.producers.Get(cmd.ProducerId)
 	if err != nil {
 		return err
@@ -139,7 +140,7 @@ func (b *broker) Send(cmd *geckod.CommandSend) error {
 		return errs.ErrDuplicatedSequenceId
 	}
 
-	return producer.Send(&geckod.RawMessage{
+	return producer.Send(ctx, &geckod.RawMessage{
 		TopicName:    cmd.TopicName,
 		ProducerName: producer.Name,
 		SequenceId:   cmd.SequenceId,

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"sync"
 
 	"github.com/bitcapybara/geckod"
@@ -46,24 +47,24 @@ func NewConsumer(id uint64, params *AddConsumerParams) *Consumer {
 	}
 }
 
-func (c *Consumer) Unsubscribe() error {
-	return c.sub.Unsubscribe(c)
+func (c *Consumer) Unsubscribe(ctx context.Context) error {
+	return c.sub.Unsubscribe(ctx, c)
 }
 
-func (c *Consumer) Flow(permits uint64) error {
+func (c *Consumer) Flow(ctx context.Context, permits uint64) error {
 	defer c.permits.Add(permits)
-	return c.sub.Flow(c.Id, permits)
+	return c.sub.Flow(ctx, c.Id, permits)
 }
 
-func (c *Consumer) Ack(ackType geckod.AckType, msgIds []uint64) error {
+func (c *Consumer) Ack(ctx context.Context, ackType geckod.AckType, msgIds []uint64) error {
 	if err := c.sub.GetType().MatchAckType(ackType); err != nil {
 		return err
 	}
-	return c.sub.Ack(ackType, msgIds)
+	return c.sub.Ack(ctx, ackType, msgIds)
 }
 
 // 把消息发送给消费者
-func (c *Consumer) SendMessages(msgs []*geckod.RawMessage) error {
+func (c *Consumer) SendMessages(ctx context.Context, msgs []*geckod.RawMessage) error {
 	defer c.permits.Add(-uint64(len(msgs)))
 	return nil
 }
@@ -72,6 +73,6 @@ func (c *Consumer) Permits() uint64 {
 	return c.permits.Load()
 }
 
-func (c *Consumer) Close() error {
-	return c.sub.DelConsumer(c.Id)
+func (c *Consumer) Close(ctx context.Context) error {
+	return c.sub.DelConsumer(ctx, c.Id)
 }

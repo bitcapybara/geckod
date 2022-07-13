@@ -35,9 +35,9 @@ func (t *topic) GetName() string {
 }
 
 // 处理客户端生产者发送的数据
-func (t *topic) Publish(msg *geckod.RawMessage) error {
+func (t *topic) Publish(ctx context.Context, msg *geckod.RawMessage) error {
 	// 存储
-	if _, err := t.storage.Add(context.TODO(), msg); err != nil {
+	if _, err := t.storage.Add(ctx, msg); err != nil {
 		return err
 	}
 	//
@@ -49,7 +49,7 @@ func (t *topic) Publish(msg *geckod.RawMessage) error {
 			}
 			return err
 		}
-		if err := dispatcher.SendMessages(); err != nil {
+		if err := dispatcher.SendMessages(ctx); err != nil {
 			return err
 		}
 	}
@@ -58,7 +58,7 @@ func (t *topic) Publish(msg *geckod.RawMessage) error {
 
 // 处理消费者订阅
 // 生成 consumer，添加到 subscription，返回 consumer
-func (t *topic) Subscribe(option *service.SubscriptionOption) (*service.Consumer, error) {
+func (t *topic) Subscribe(ctx context.Context, option *service.SubscriptionOption) (*service.Consumer, error) {
 
 	if len(option.SubName) == 0 {
 		return nil, errors.New("subscription name is empty")
@@ -76,18 +76,18 @@ func (t *topic) Subscribe(option *service.SubscriptionOption) (*service.Consumer
 		return nil, err
 	}
 
-	if err := subscription.AddConsumer(consumer); err != nil {
+	if err := subscription.AddConsumer(ctx, consumer); err != nil {
 		return nil, err
 	}
 
 	return consumer, nil
 }
 
-func (t *topic) Unsubscribe(subName string) error {
+func (t *topic) Unsubscribe(ctx context.Context, subName string) error {
 	return nil
 }
 
-func (t *topic) RemoveSubscription(subName string) error {
+func (t *topic) RemoveSubscription(ctx context.Context, subName string) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -108,7 +108,7 @@ func (t *topic) getOrCreateSubscription(name string) service.Subscription {
 }
 
 // 生产者管理
-func (t *topic) AddProducer(p *service.Producer) error {
+func (t *topic) AddProducer(ctx context.Context, p *service.Producer) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -127,7 +127,7 @@ func (t *topic) AddProducer(p *service.Producer) error {
 	return nil
 }
 
-func (t *topic) GetProducer(producer_id uint64) (*service.Producer, error) {
+func (t *topic) GetProducer(ctx context.Context, producer_id uint64) (*service.Producer, error) {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -137,7 +137,7 @@ func (t *topic) GetProducer(producer_id uint64) (*service.Producer, error) {
 	return nil, errs.ErrNotFound
 }
 
-func (t *topic) DelProducer(producer_id uint64) error {
+func (t *topic) DelProducer(ctx context.Context, producer_id uint64) error {
 	t.mu.Lock()
 	defer t.mu.Unlock()
 
@@ -146,6 +146,6 @@ func (t *topic) DelProducer(producer_id uint64) error {
 }
 
 // 释放资源
-func (t *topic) Close() error {
+func (t *topic) Close(ctx context.Context) error {
 	panic("not implemented") // TODO: Implement
 }

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"sync"
 
 	"github.com/bitcapybara/geckod"
@@ -45,9 +46,9 @@ func (p *Producer) GetTopic() Topic {
 	return p.topic
 }
 
-func (p *Producer) Send(msg *geckod.RawMessage) error {
+func (p *Producer) Send(ctx context.Context, msg *geckod.RawMessage) error {
 	// topic
-	if err := p.topic.Publish(msg); err != nil {
+	if err := p.topic.Publish(ctx, msg); err != nil {
 		return err
 	}
 	// 更新最新消息序列号

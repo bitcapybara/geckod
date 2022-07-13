@@ -1,6 +1,10 @@
 package service
 
-import "github.com/bitcapybara/geckod"
+import (
+	"context"
+
+	"github.com/bitcapybara/geckod"
+)
 
 type Topics interface {
 	GetOrCreate(name string) Topic
@@ -12,20 +16,20 @@ type Topic interface {
 	GetName() string
 
 	// 处理客户端生产者发送的数据
-	Publish(*geckod.RawMessage) error
+	Publish(ctx context.Context, msg *geckod.RawMessage) error
 	// 处理消费者订阅
 	// 生成 consumer，添加到 subscription，返回 consumer
-	Subscribe(*SubscriptionOption) (*Consumer, error)
-	Unsubscribe(subName string) error
-	RemoveSubscription(subName string) error
+	Subscribe(ctx context.Context, subOpt *SubscriptionOption) (*Consumer, error)
+	Unsubscribe(ctx context.Context, subName string) error
+	RemoveSubscription(ctx context.Context, subName string) error
 
 	// 生产者管理
-	AddProducer(*Producer) error
-	GetProducer(producer_id uint64) (*Producer, error)
-	DelProducer(producer_id uint64) error
+	AddProducer(ctx context.Context, _ *Producer) error
+	GetProducer(ctx context.Context, producer_id uint64) (*Producer, error)
+	DelProducer(ctx context.Context, producer_id uint64) error
 
 	// 释放资源
-	Close() error
+	Close(ctx context.Context) error
 }
 
 type SubscriptionOption struct {

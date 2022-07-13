@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"context"
 	"sync"
 
 	"github.com/bitcapybara/geckod/errs"
@@ -24,7 +25,7 @@ func newDispatcher() *dispatcher {
 	return nil
 }
 
-func (d *dispatcher) AddConsumer(consumer *service.Consumer) error {
+func (d *dispatcher) AddConsumer(ctx context.Context, consumer *service.Consumer) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -36,7 +37,7 @@ func (d *dispatcher) AddConsumer(consumer *service.Consumer) error {
 	return nil
 }
 
-func (d *dispatcher) DelConsumer(consumerId uint64) error {
+func (d *dispatcher) DelConsumer(ctx context.Context, consumerId uint64) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -44,7 +45,7 @@ func (d *dispatcher) DelConsumer(consumerId uint64) error {
 	return nil
 }
 
-func (d *dispatcher) GetConsumers() []*service.Consumer {
+func (d *dispatcher) GetConsumers(ctx context.Context) []*service.Consumer {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -56,17 +57,17 @@ func (d *dispatcher) GetConsumers() []*service.Consumer {
 	return res
 }
 
-func (d *dispatcher) Flow(consumerId uint64, permits uint64) error {
+func (d *dispatcher) Flow(ctx context.Context, consumerId uint64, permits uint64) error {
 	if !d.hasConsumer(consumerId) {
 		return errs.ErrNotFound
 	}
 
 	d.totalAvailablePermits.Store(d.totalAvailablePermits.Load() + permits)
 
-	return d.sendMessagesToConsumers()
+	return d.sendMessagesToConsumers(ctx)
 }
 
-func (d *dispatcher) sendMessagesToConsumers() error {
+func (d *dispatcher) sendMessagesToConsumers(ctx context.Context) error {
 	// 如果当前正在发送，则直接退出
 	if !d.sendMu.TryLock() {
 		return nil
@@ -94,7 +95,7 @@ func (d *dispatcher) sendMessagesToConsumers() error {
 			return err
 		}
 		// 发送
-		if err := consumer.SendMessages(msgs); err != nil {
+		if err := consumer.SendMessages(ctx, msgs); err != nil {
 			return err
 		}
 
@@ -122,16 +123,16 @@ func (d *dispatcher) hasConsumer(consumerId uint64) bool {
 	return false
 }
 
-func (d *dispatcher) CanUnsubscribe(consumerId uint64) bool {
+func (d *dispatcher) CanUnsubscribe(ctx context.Context, consumerId uint64) bool {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 	return len(d.consumers) == 1 && d.consumers[consumerId] != nil
 }
 
-func (d *dispatcher) SendMessages() error {
-	panic("not implemented") // TODO: Implement
+func (d *dispatcher) SendMessages(ctx context.Context) error {
+	return d.sendMessagesToConsumers(ctx)
 }
 
-func (d *dispatcher) Close() error {
+func (d *dispatcher) Close(ctx context.Context) error {
 	panic("not implemented") // TODO: Implement
 }

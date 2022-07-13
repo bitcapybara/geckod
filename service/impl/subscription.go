@@ -1,6 +1,7 @@
 package impl
 
 import (
+	"context"
 	"errors"
 	"sync"
 
@@ -35,9 +36,9 @@ func (s *subscription) GetType() geckod.SubScriptionType {
 	return s.subType
 }
 
-func (s *subscription) AddConsumer(consumer *service.Consumer) error {
+func (s *subscription) AddConsumer(ctx context.Context, consumer *service.Consumer) error {
 	// 如果没有 dispatcher，则创建一个新的
-	return s.getOrCreateDispatcher().AddConsumer(consumer)
+	return s.getOrCreateDispatcher().AddConsumer(ctx, consumer)
 }
 
 func (s *subscription) getOrCreateDispatcher() service.Dispatcher {
@@ -51,7 +52,7 @@ func (s *subscription) getOrCreateDispatcher() service.Dispatcher {
 	return s.dispatcher
 }
 
-func (s *subscription) DelConsumer(consumerId uint64) error {
+func (s *subscription) DelConsumer(ctx context.Context, consumerId uint64) error {
 	//
 	dispatcher, err := s.GetDispatcher()
 	if err != nil {
@@ -61,31 +62,31 @@ func (s *subscription) DelConsumer(consumerId uint64) error {
 		return nil
 	}
 
-	if err := dispatcher.DelConsumer(consumerId); err != nil {
+	if err := dispatcher.DelConsumer(ctx, consumerId); err != nil {
 		return err
 	}
 
-	if len(dispatcher.GetConsumers()) != 0 {
+	if len(dispatcher.GetConsumers(ctx)) != 0 {
 		return nil
 	}
 
 	// 清理资源
-	if err := dispatcher.Close(); err != nil {
+	if err := dispatcher.Close(ctx); err != nil {
 		return err
 	}
 
-	return s.topic.RemoveSubscription(s.name)
+	return s.topic.RemoveSubscription(ctx, s.name)
 }
 
-func (s *subscription) Flow(consumerId uint64, permits uint64) error {
+func (s *subscription) Flow(ctx context.Context, consumerId uint64, permits uint64) error {
 	dispatcher, err := s.GetDispatcher()
 	if err != nil {
 		return err
 	}
-	return dispatcher.Flow(consumerId, permits)
+	return dispatcher.Flow(ctx, consumerId, permits)
 }
 
-func (s *subscription) Ack(ackType geckod.AckType, msgIds []uint64) error {
+func (s *subscription) Ack(ctx context.Context, ackType geckod.AckType, msgIds []uint64) error {
 	if ackType == geckod.AckType(cmdpb.Ack_Cumulative) {
 		if len(msgIds) != 1 {
 			return errors.New("Invalid cumulative ack received with multiple message ids")
@@ -99,20 +100,20 @@ func (s *subscription) Ack(ackType geckod.AckType, msgIds []uint64) error {
 	return s.cursor.Delete(msgIds)
 }
 
-func (s *subscription) Unsubscribe(consumer *service.Consumer) error {
+func (s *subscription) Unsubscribe(ctx context.Context, consumer *service.Consumer) error {
 	dispatcher, err := s.GetDispatcher()
 	if err != nil {
 		return nil
 	}
-	if !dispatcher.CanUnsubscribe(consumer.Id) {
+	if !dispatcher.CanUnsubscribe(ctx, consumer.Id) {
 		return errors.New("Shared consumer attempting to unsubscribe")
 	}
 
-	if err := consumer.Close(); err != nil {
+	if err := consumer.Close(ctx); err != nil {
 		return err
 	}
 
-	return s.Close()
+	return s.Close(ctx)
 }
 
 func (s *subscription) GetDispatcher() (service.Dispatcher, error) {
@@ -125,8 +126,8 @@ func (s *subscription) GetDispatcher() (service.Dispatcher, error) {
 	return nil, errs.ErrNotFound
 }
 
-func (s *subscription) Close() error {
-	if err := s.topic.Unsubscribe(s.name); err != nil {
+func (s *subscription) Close(ctx context.Context) error {
+	if err := s.topic.Unsubscribe(ctx, s.name); err != nil {
 		return err
 	}
 
@@ -134,7 +135,7 @@ func (s *subscription) Close() error {
 	if err != nil {
 		return err
 	}
-	if err := dispatcher.Close(); err != nil {
+	if err := dispatcher.Close(ctx); err != nil {
 		return err
 	}
 	return nil
