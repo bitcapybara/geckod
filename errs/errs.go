@@ -26,6 +26,6 @@ var (
 	ErrUnmatchAckType            = NewCommandError(cmdpb.Error_UnmatchAckType, "cumulative ack on shared subscription")
 	ErrProducerAlreadyExists     = NewCommandError(cmdpb.Error_ProducerAlreadyExists, "生产者已存在")
 	ErrConsumerAlreadyExists     = NewCommandError(cmdpb.Error_ConsumerAlreadyExists, "消费者已存在")
-	ErrProducerExclusiveConflict = errors.New("")
-	ErrDuplicatedSequenceId      = errors.New("")
+	ErrProducerExclusiveConflict = NewCommandError(cmdpb.Error_ExclusiveConflict, "已存在 Exclusive 模式的生产者")
+	ErrDuplicatedSequenceId      = NewCommandError(cmdpb.Error_DuplicatedSequenceId, "生产者消息序列号重复")
 )

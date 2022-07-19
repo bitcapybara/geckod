@@ -1,11 +1,10 @@
-github.com/bitcapybara/geckod-proto v0.0.0-20220705124628-3f56ba0ba697 h1:aXDbKz/ixv0hVMjYcYCCiyxh1z3dZIzcmSs3klm88u0=
-github.com/bitcapybara/geckod-proto v0.0.0-20220705124628-3f56ba0ba697/go.mod h1:4flw4eXUBASZc1S+OjmK8wSVkt/LMmEmUNWW5pDBxYQ=
+github.com/bitcapybara/geckod-proto v0.0.0-20220714105617-6f7fdcf15669 h1:xBN0J0yUadA0JxVTezsvVFxlC+qnAHQsWQAxA8aqQ4E=
+github.com/bitcapybara/geckod-proto v0.0.0-20220714105617-6f7fdcf15669/go.mod h1:tyq5HkKCkwjim991svrdii3chD84ahD98WEqiuMJ2Bo=
 github.com/bits-and-blooms/bitset v1.2.2 h1:J5gbX05GpMdBjCvQ9MteIg2KKDExr7DrgK+Yc15FvIk=
 github.com/bits-and-blooms/bitset v1.2.2/go.mod h1:gIdJ4wp64HaoK2YrL1Q5/N7Y16edYb8uY+O0FJTyyDA=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/golang/protobuf v1.5.0 h1:LUVKkCeviFUMKqHa4tXIIij/lbhnMbP7Fn5wKdKkRh4=
 github.com/golang/protobuf v1.5.0/go.mod h1:FsONVRAS9T7sI+LIUmWTfcYkHO4aIWwzhcaSAoJOfIk=
 github.com/google/go-cmp v0.5.5 h1:Khx7svrCpmxxtHBq5j2mp/xVjsi8hQMfNLvJFAlrGgU=
 github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
